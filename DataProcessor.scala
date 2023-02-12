@@ -16,9 +16,9 @@ import scala.collection.mutable.ArrayBuffer
 
 object DataProcessor {
   def splitArrayToRowArray(splitHeaderRow: Array[String]): Array[String] = {
-    var v = 0
+    var v = 0 /* Accumulator*/
     var arr = new ArrayBuffer[String]()
-    while (v < splitHeaderRow.length) {
+    while (v < splitHeaderRow.length) { /*Accumulates to length of Array*/
       if (splitHeaderRow.length == 38) {
         if (splitHeaderRow(v).contains("\"")
           && !splitHeaderRow(v).contains(",")) {
@@ -69,43 +69,39 @@ object DataProcessor {
   def rowArrayToSolarInstallation(rowData: Array[String]): SolarInstallation = {
     val solarInstallation = new SolarInstallation()
     val list = List(0,1,3,4,9,11,12,14,15,17,18,19,20,21,22,23,24,25,26,27,28,36,37,
-      38,39,40,41,42,43)
-    var s = 0
-    for (i <- list) {
-      solarInstallation.fields += (SolarInstallation.REQUIRED_HEADERS(s) -> rowData(i))
-      s = s + 1
+      38,39,40,41,42,43) /* These are the required headers indicies */
+    var s = 0 /* Accumulator */ 
+    for (i <- list) { /* Loop through indicies */ 
+      solarInstallation.fields += (SolarInstallation.REQUIRED_HEADERS(s) -> rowData(i)) /* Inserts the required header by string mapped to the value */
+      s = s + 1 
     }
     solarInstallation
   }
 
   def computeUniqueCities(dataset: Array[SolarInstallation]): Int = {
-    var totalCities:List[String] = List()
-    for (i <- dataset){
-      val v = i.fields.getOrElse("Primary Inverter Manufacturer","")
-      if (v.nonEmpty && v != "Primary Inverter Manufacturer"){
-        totalCities = totalCities :+ v
+    var totalCities:List[String] = List() /* Create List */
+    for (i <- dataset){ /* Loop Array */
+      val v = i.fields.getOrElse("Primary Inverter Manufacturer","") /* recieve value of the key */
+      if (v.nonEmpty && v != "Primary Inverter Manufacturer"){ /* check if key exists */
+        totalCities = totalCities :+ v 
       }
     }
-    totalCities.distinct.length
+    totalCities.distinct.length /* removes repeated values and returns the length */ 
   }
 
 
   def computeAverageCostForCity(dataset: Array[SolarInstallation], city: String): Double = {
-    var Costs = 0.0
-    var numberOfProjects = 0.0
+    var Costs = 0.0 /* project costs accumulator */
+    var numberOfProjects = 0.0 /* number of projects in the city */
     for (i <- dataset){
-      if (i.toCSV(4).toString == city) {
-        numberOfProjects += 1.0
-        val costOfInstallation: Int = i.toCSV(27).toInt
-        if (costOfInstallation > 0) {
-          Costs += costOfInstallation
+      if (i.toCSV(4).toString == city) { /* check if the project is in the given city */
+        numberOfProjects += 1.0 
+        val costOfInstallation: Int = i.toCSV(27).toInt /* make reference for project costs for effciency*/
+        if (costOfInstallation > 0) { /* checks if cost is valid */
+          Costs += costOfInstallation /* add costs to accumulator */
         }
       }
     }
-    if (Costs/numberOfProjects == 0.0){
-      0.0
-    } else {
-      Costs/numberOfProjects
-    }
+    Costs/numberOfProjects
   }
 }
